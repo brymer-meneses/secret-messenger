@@ -73,7 +73,7 @@ async def register(inter: ApplicationCommandInteraction, nickname: str, password
 
     await inter.edit_original_response(embed=embed)
 
-    login(inter, nickname, password)
+    await login(inter, nickname, password)
     return
 
 @bot.slash_command(name="login", description="Login to your account")
