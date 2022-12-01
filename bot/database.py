@@ -74,7 +74,7 @@ class Database:
         cell = await self._find_value_from_column(worksheet, 1, nickname)
         return cell is not None
 
-    async def register_nickname(self, nickname: str, password: str, userid: str):
+    async def register_nickname(self, nickname: str, password: str, userid: str) -> None:
 
         worksheet = await self._get_worksheet(0)
         hashed_password = hashlib.sha256(bytes(password + userid, "utf-8"), usedforsecurity=True).hexdigest()
@@ -83,7 +83,7 @@ class Database:
 
         return
     
-    async def delete_nickname(self, nickname: str, password: str, userid: str):
+    async def delete_nickname(self, nickname: str, password: str, userid: str) -> bool:
         worksheet = await self._get_worksheet(0)
 
         if not await self.is_password_and_nickname_valid(nickname, password, userid):
@@ -94,7 +94,7 @@ class Database:
         self.logged_in_users.pop(userid)
         return True
     
-    async def change_nickname(self, new_nickname: str, userid: str):
+    async def change_nickname(self, new_nickname: str, userid: str) -> bool:
         worksheet = await self._get_worksheet(0)
         
         nickname = await self.get_nickname(userid)
