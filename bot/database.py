@@ -91,13 +91,13 @@ class Database:
         
         cell = await self._find_value_from_column(worksheet, 1, nickname)
         await worksheet.delete_row(cell.row)
-        self.logout(userid)
+        self.logout_user(userid)
         return True
     
     async def change_nickname(self, new_nickname: str, userid: str) -> bool:
         worksheet = await self._get_worksheet(0)
         
-        nickname = await self.get_nickname(userid)
+        nickname = await self.get_nickname_from_session(userid)
         
         cell = await self._find_value_from_column(worksheet, 1, nickname)
         if cell is None:
@@ -117,21 +117,21 @@ class Database:
         await worksheet.update_cell(cell.row, cell.col + 1, hashed_password)
         return True
     
-    async def login(self, nickname: str, password: str, userid: str) -> bool:
+    async def login_user(self, nickname: str, password: str, userid: str) -> bool:
         is_valid = await self.is_password_and_nickname_valid(nickname, password, userid)
         if is_valid:
             hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
             self.logged_in_users[hashed_id] = nickname
         return is_valid
     
-    async def logout(self, userid: str) -> bool:
+    async def logout_user(self, userid: str) -> bool:
         hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
         if hashed_id in self.logged_in_users:
             self.logged_in_users.pop(hashed_id)
             return True
         return False
     
-    async def get_nickname(self, userid: str) -> Optional[str]:
+    async def get_nickname_from_session(self, userid: str) -> Optional[str]:
         hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
         if hashed_id in self.logged_in_users:
             return self.logged_in_users[hashed_id]

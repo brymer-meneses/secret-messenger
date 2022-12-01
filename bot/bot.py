@@ -29,7 +29,7 @@ async def confess(
     ) -> None:
     
     await inter.response.defer(ephemeral=True)
-    nickname = await database.get_nickname(str(inter.author.id))
+    nickname = await database.get_nickname_from_session(str(inter.author.id))
     if nickname is None:
         embed = Embed(title="Error", description="It seems like you haven't logged in yet.\n\nIf you don't have a nickname yet, please register one using `/register`.\n\nIf you have one already, please login via `/login`.\n\nNote that you can create as many nicknames as you like!", color=0xFF0000)
         await inter.edit_original_message(embed=embed)
@@ -87,13 +87,13 @@ async def login(inter: ApplicationCommandInteraction, nickname: str, password: s
         await inter.edit_original_response(embed=embed)
         return
 
-    await database.logout(str(inter.author.id))
+    await database.logout_user(str(inter.author.id))
 
     embed = Embed(title="Confession",
                 description=f"Successfully logged in as `{nickname}`",
                 timestamp=datetime.now(timezone))
 
-    await database.login(nickname, password, str(inter.author.id))
+    await database.login_user(nickname, password, str(inter.author.id))
 
     await inter.edit_original_response(embed=embed)
     return
@@ -102,7 +102,7 @@ async def login(inter: ApplicationCommandInteraction, nickname: str, password: s
 async def logout(inter: ApplicationCommandInteraction) -> None:
         
         await inter.response.defer(ephemeral=True)
-        valid = await database.logout(str(inter.author.id))
+        valid = await database.logout_user(str(inter.author.id))
         if valid is False:
             embed = Embed(title="Error", description="You are not logged in.", color=0xFF0000)
             await inter.edit_original_message(embed=embed)
@@ -124,7 +124,7 @@ async def user(inter: ApplicationCommandInteraction):
 async def delete(inter: ApplicationCommandInteraction, password: str) -> None:
 
     await inter.response.defer(ephemeral=True)
-    nickname = await database.get_nickname(str(inter.author.id))
+    nickname = await database.get_nickname_from_session(str(inter.author.id))
     if nickname is None:
         embed = Embed(title="Error", description="You don't have a nickname yet. Please register one using `/register` or if you have one already, login via '/login'.", color=0xFF0000)
         await inter.edit_original_message(embed=embed)
@@ -152,7 +152,7 @@ async def change(inter: ApplicationCommandInteraction):
 async def change_nickname(inter: ApplicationCommandInteraction, nickname: str) -> None:
 
     await inter.response.defer(ephemeral=True)
-    nickname = await database.get_nickname(str(inter.author.id))
+    nickname = await database.get_nickname_from_session(str(inter.author.id))
     if nickname is None:
         embed = Embed(title="Error", description="You don't have a nickname yet. Please register one using `/register` or if you have one already, login via '/login'.", color=0xFF0000)
         await inter.edit_original_message(embed=embed)
@@ -170,7 +170,7 @@ async def change_nickname(inter: ApplicationCommandInteraction, nickname: str) -
 async def change_password(inter: ApplicationCommandInteraction, old_password: str, new_password: str) -> None:
 
     await inter.response.defer(ephemeral=True)
-    nickname = await database.get_nickname(str(inter.author.id))
+    nickname = await database.get_nickname_from_session(str(inter.author.id))
     if nickname is None:
         embed = Embed(title="Error", description="You don't have a nickname yet. Please register one using `/register` or if you have one already, login via `/login`.", color=0xFF0000)
         await inter.edit_original_message(embed=embed)
