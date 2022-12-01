@@ -91,6 +91,7 @@ class Database:
         
         cell = await self._find_value_from_column(worksheet, 1, nickname)
         await worksheet.delete_row(cell.row)
+        self.logged_in_users.pop(userid)
         return True
     
     async def change_nickname(self, new_nickname: str, userid: str):
