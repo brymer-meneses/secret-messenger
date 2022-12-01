@@ -91,7 +91,7 @@ class Database:
         
         cell = await self._find_value_from_column(worksheet, 1, nickname)
         await worksheet.delete_row(cell.row)
-        self.logged_in_users.pop(userid)
+        self.logout(userid)
         return True
     
     async def change_nickname(self, new_nickname: str, userid: str) -> bool:
@@ -120,16 +120,19 @@ class Database:
     async def login(self, nickname: str, password: str, userid: str) -> bool:
         valid = await self.is_password_and_nickname_valid(nickname, password, userid)
         if valid:
-            self.logged_in_users[userid] = nickname
+            hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
+            self.logged_in_users[hashed_id] = nickname
         return valid
     
     async def logout(self, userid: str) -> bool:
         if userid in self.logged_in_users:
-            self.logged_in_users.pop(userid)
+            hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
+            self.logged_in_users.pop(hashed_id)
             return True
         return False
     
     async def get_nickname(self, userid: str) -> Optional[str]:
         if userid in self.logged_in_users:
-            return self.logged_in_users[userid]
+            hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
+            return self.logged_in_users[hashed_id]
         return None
