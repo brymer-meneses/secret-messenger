@@ -117,7 +117,7 @@ async def logout(inter: ApplicationCommandInteraction) -> None:
 
 
 @bot.slash_command()
-async def user(inter):
+async def user(inter: ApplicationCommandInteraction):
     pass
 
 @user.sub_command(name="delete", description="Delete current nickname")
@@ -145,7 +145,7 @@ async def delete(inter: ApplicationCommandInteraction, password: str) -> None:
     return
 
 @user.sub_command_group()
-async def change(inter):
+async def change(inter: ApplicationCommandInteraction):
     pass
 
 @change.sub_command(name="nickname", description="Change current nickname")
