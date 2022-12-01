@@ -118,11 +118,11 @@ class Database:
         return True
     
     async def login(self, nickname: str, password: str, userid: str) -> bool:
-        valid = await self.is_password_and_nickname_valid(nickname, password, userid)
-        if valid:
+        is_valid = await self.is_password_and_nickname_valid(nickname, password, userid)
+        if is_valid:
             hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
             self.logged_in_users[hashed_id] = nickname
-        return valid
+        return is_valid
     
     async def logout(self, userid: str) -> bool:
         if userid in self.logged_in_users:
