@@ -132,7 +132,7 @@ class Database:
         return False
     
     async def get_nickname(self, userid: str) -> Optional[str]:
-        if userid in self.logged_in_users:
-            hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
+        hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
+        if hashed_id in self.logged_in_users:
             return self.logged_in_users[hashed_id]
         return None
