@@ -32,6 +32,8 @@ class Database:
 
         self.agcm = gspread_asyncio.AsyncioGspreadClientManager(get_creds)
         self.spreadsheet_key = spreadsheet_key
+
+        self.logged_in_users = {}
         return
 
     async def _get_worksheet(self, index: int) -> AsyncioGspreadWorksheet:
@@ -39,7 +41,7 @@ class Database:
         agc = await self.agcm.authorize()
         ss = await agc.open_by_key(self.spreadsheet_key)
         return await ss.get_worksheet(index)
-
+    
     async def _find_value_from_column(self, worksheet: AsyncioGspreadWorksheet, column_number: int, value: str) -> Optional[Cell]:
         """Helper function"""
         records = await worksheet.get_all_values()
@@ -49,6 +51,12 @@ class Database:
                 return Cell(row_idx+2, column_number, row_value)
         return None
 
+    async def increment_counter(self) -> int:
+        worksheet = await self._get_worksheet(1)
+        cell = await worksheet.cell(1, 2)
+        await worksheet.update_cell(1, 2, int(cell.value) + 1)
+        return int(cell.value)
+    
     async def is_password_and_nickname_valid(self, nickname: str, password: str, userid: str) -> bool:
         worksheet = await self._get_worksheet(0)
         
@@ -75,7 +83,7 @@ class Database:
 
         return
     
-    async def unregister_nickname(self, nickname: str, password: str, userid: str):
+    async def delete_nickname(self, nickname: str, password: str, userid: str):
         worksheet = await self._get_worksheet(0)
 
         if not await self.is_password_and_nickname_valid(nickname, password, userid):
@@ -85,6 +93,18 @@ class Database:
         await worksheet.delete_row(cell.row)
         return True
     
+    async def change_nickname(self, new_nickname: str, userid: str):
+        worksheet = await self._get_worksheet(0)
+        
+        nickname = await self.get_nickname(userid)
+        
+        cell = await self._find_value_from_column(worksheet, 1, nickname)
+        if cell is None:
+            return False
+
+        await worksheet.update_cell(cell.row, cell.col, new_nickname)
+        return True
+
     async def change_password(self, nickname: str, password: str, new_password: str, userid: str):
         worksheet = await self._get_worksheet(0)
 
@@ -96,8 +116,19 @@ class Database:
         await worksheet.update_cell(cell.row, cell.col + 1, hashed_password)
         return True
     
-    async def increment_counter(self) -> int:
-        worksheet = await self._get_worksheet(1)
-        cell = await worksheet.cell(1, 2)
-        await worksheet.update_cell(1, 2, int(cell.value) + 1)
-        return int(cell.value)
+    async def login(self, nickname: str, password: str, userid: str) -> bool:
+        valid = await self.is_password_and_nickname_valid(nickname, password, userid)
+        if valid:
+            self.logged_in_users[userid] = nickname
+        return valid
+    
+    async def logout(self, userid: str) -> bool:
+        if userid in self.logged_in_users:
+            self.logged_in_users.pop(userid)
+            return True
+        return False
+    
+    async def get_nickname(self, userid: str) -> Optional[str]:
+        if userid in self.logged_in_users:
+            return self.logged_in_users[userid]
+        return None
