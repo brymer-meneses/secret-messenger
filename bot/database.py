@@ -125,8 +125,8 @@ class Database:
         return is_valid
     
     async def logout(self, userid: str) -> bool:
-        if userid in self.logged_in_users:
-            hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
+        hashed_id = hashlib.sha256(bytes(userid, "utf-8"), usedforsecurity=True).hexdigest()
+        if hashed_id in self.logged_in_users:
             self.logged_in_users.pop(hashed_id)
             return True
         return False
