@@ -8,6 +8,8 @@ import pytz
 
 from database import Database
 
+import openai
+
 
 bot = InteractionBot(sync_commands=True, test_guilds=[988079158477332481, 882925411858804777])
 
@@ -241,4 +243,30 @@ async def reply(inter: ApplicationCommandInteraction, reply: str, confession_id:
     embed.set_footer(text=f"Confession ID: {current_count:04}")
     
     await inter.channel.send(embed=embed)
+    return
+
+@bot.slash_command(name="ask-gpt", description="Ask GPT-3 a question.")
+async def ask_gpt(inter: ApplicationCommandInteraction, prompt: str) -> None:
+    await inter.response.defer(ephemeral=True)
+
+    nickname = await database.get_nickname_from_session(str(inter.author.id))
+    if nickname is None:
+        nickname = "Someone"
+
+    current_count = await database.increment_counter()
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "Hello, I'm GPT-3. I'm a chatbot. I'm here to answer your questions."},
+            {"role": "user", "content": prompt},
+        ],
+    )
+
+    description = f"**{nickname} asked:** {prompt}\n\n**GPT-3 replied:** {response['choices'][0]['message']['content']}"
+    title = f"Chat with GPT-3 \#{current_count:04}"
+    
+    embed = Embed(title=title, description=description)
+
+    await inter.channel.send(embed=embed)
+    await inter.edit_original_response(content="Successfully asked GPT-3 a question")
     return
